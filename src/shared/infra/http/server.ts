@@ -2,10 +2,11 @@ import 'reflect-metadata'
 import express, { Request, Response, NextFunction } from 'express'
 import 'express-async-errors'
 import cors from 'cors'
-import routes from './routes'
-import AppError from './error/AppError'
-import uploadConfig from './config/multer'
-import './database'
+import AppError from '@shared/errors/AppError'
+import routes from '@shared/infra/http/routes'
+import uploadConfig from '@config/multer'
+import '@shared/infra/typeorm'
+import '@shared/container'
 
 const port = 3333
 const app = express()

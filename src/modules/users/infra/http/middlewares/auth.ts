@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
 import { promisify } from 'util'
-import authConfig from '../config/auth'
-import AppError from '../error/AppError'
+import authConfig from '@config/auth'
+import AppError from '@shared/errors/AppError'
 
-interface TokenPayload {
+interface ITokenPayload {
   iat: number
   exp: number
   sub: string
@@ -25,7 +25,7 @@ export default async (
     const { sub } = (await promisify(jwt.verify)(
       token,
       authConfig.jwt.secret
-    )) as TokenPayload
+    )) as ITokenPayload
     req.user = { id: sub }
 
     return nxt()
