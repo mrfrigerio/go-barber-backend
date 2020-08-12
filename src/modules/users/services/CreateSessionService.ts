@@ -4,6 +4,7 @@ import User from '@modules/users/infra/typeorm/entities/User'
 import authConfig from '@config/auth'
 import CheckUserPasswordService from '@modules/users/services/CheckUserPasswordService'
 import IUsersRepository from '@modules/users/repositories/IUsersRepository'
+import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider'
 
 interface IRequest {
   email: string
@@ -22,7 +23,8 @@ export default class CreateSessionService {
     password
   }: IRequest): Promise<{ user: User; token: string }> {
     const checkUserPasswordService = new CheckUserPasswordService(
-      this.usersRepository
+      this.usersRepository,
+      new FakeHashProvider()
     )
     const user = await checkUserPasswordService.execute({ email, password })
 

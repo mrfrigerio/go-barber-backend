@@ -3,12 +3,15 @@ import AppError from '@shared/errors/AppError'
 import User from '@modules/users/infra/typeorm/entities/User'
 import ICreateUserDTO from '@modules/users/dtos/ICreateUserDTO'
 import IUsersRepository from '@modules/users/repositories/IUsersRepository'
+import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider'
 
 @injectable()
 export default class CreateUserService {
   constructor(
     @inject('UsersRepository')
-    private usersRepository: IUsersRepository
+    private usersRepository: IUsersRepository,
+    @inject('HashProvider')
+    private hashProvider: IHashProvider
   ) {}
 
   async execute({ name, email, password }: ICreateUserDTO): Promise<User> {
@@ -16,7 +19,14 @@ export default class CreateUserService {
     if (checkUserExists) {
       throw new AppError('User already exists!')
     }
-    const user = await this.usersRepository.create({ name, email, password })
+
+    const hashedPassword = await this.hashProvider.generateHash(password)
+    const user = await this.usersRepository.create({
+      name,
+      email,
+      password,
+      password_hash: hashedPassword
+    })
     return user
   }
 }

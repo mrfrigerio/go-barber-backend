@@ -3,11 +3,8 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  UpdateDateColumn,
-  BeforeInsert
+  UpdateDateColumn
 } from 'typeorm'
-
-import bcrypt from 'bcryptjs'
 
 @Entity('users')
 class User {
@@ -33,11 +30,6 @@ class User {
 
   @UpdateDateColumn()
   updated_at: Date
-
-  @BeforeInsert()
-  private async passwordEncrypt(): Promise<void> {
-    this.password_hash = await bcrypt.hash(this.password, 8)
-  }
 }
 
 export default User

@@ -1,8 +1,8 @@
-import { compare } from 'bcryptjs'
 import { injectable, inject } from 'tsyringe'
 import AppError from '@shared/errors/AppError'
 import User from '@modules/users/infra/typeorm/entities/User'
 import IUsersRepository from '@modules/users/repositories/IUsersRepository'
+import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider'
 
 interface IRequest {
   email: string
@@ -13,7 +13,10 @@ interface IRequest {
 export default class CheckUserPasswordService {
   constructor(
     @inject('UsersRepository')
-    private usersRepository: IUsersRepository
+    private usersRepository: IUsersRepository,
+
+    @inject('HashProvider')
+    private hashProvider: IHashProvider
   ) {}
 
   async execute({ email, password }: IRequest): Promise<User> {
@@ -22,7 +25,10 @@ export default class CheckUserPasswordService {
     if (!user) {
       throw new AppError('User not found!', 401)
     }
-    const isValidPassword = await compare(password, user.password_hash)
+    const isValidPassword = await this.hashProvider.compareHash(
+      password,
+      user.password_hash
+    )
     if (!isValidPassword) {
       throw new AppError('Invalid user password!', 401)
     }
