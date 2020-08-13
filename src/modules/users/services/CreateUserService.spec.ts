@@ -4,14 +4,18 @@ import FakeUsersRepository from '../repositories/fakes/FakeUsersRepository'
 import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider'
 import CreateUserService from './CreateUserService'
 
+let createUser: CreateUserService
+
 describe('CreateUser', () => {
-  const createUser = new CreateUserService(
-    new FakeUsersRepository(),
-    new FakeHashProvider()
-  )
+  beforeEach(() => {
+    createUser = new CreateUserService(
+      new FakeUsersRepository(),
+      new FakeHashProvider()
+    )
+  })
   it('Shold be able to create a new User', async () => {
     const user = await createUser.execute({
-      email: 'user@fake.com',
+      email: 'john@doe.com',
       name: 'John Doe',
       password: '123abc'
     })
@@ -24,7 +28,7 @@ describe('CreateUser', () => {
       name: 'John Doe',
       password: '123abc'
     })
-    expect(
+    await expect(
       createUser.execute({
         email: 'john@doe.com',
         name: 'John Doe',

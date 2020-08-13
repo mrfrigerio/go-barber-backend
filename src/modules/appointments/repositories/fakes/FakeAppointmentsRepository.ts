@@ -1,7 +1,7 @@
 import Appointment from '@modules/appointments/infra/typeorm/entities/Appointment'
 import IAppointmentRepository from '@modules/appointments/repositories/IAppointmentsRepository'
 import User from '@modules/users/infra/typeorm/entities/User'
-import { uuid } from 'uuidv4'
+import { v4 } from 'uuid'
 import { isEqual } from 'date-fns'
 
 interface IRequest {
@@ -20,7 +20,7 @@ class AppointmentsRepository implements IAppointmentRepository {
   public async create({ date, provider }: IRequest): Promise<Appointment> {
     const appointment = new Appointment()
     Object.assign(appointment, {
-      id: uuid(),
+      id: v4(),
       date,
       provider,
       created_at: new Date(),

@@ -10,21 +10,26 @@ interface IRequest {
   avatarFilename: string
 }
 
+let createUser: CreateUserService
+let updateAvatarService: UpdateAvatarService
+let usersRepository: FakeUsersRepository
+let storageProvider: FakeStorageProvider
+
 describe('UpdateAvatarService', () => {
-  const usersRepository = new FakeUsersRepository()
-  const storageProvider = new FakeStorageProvider()
-  const createUser = new CreateUserService(
-    new FakeUsersRepository(),
-    new FakeHashProvider()
-  )
-  const updateAvatarService = new UpdateAvatarService(
-    usersRepository,
-    storageProvider
-  )
+  beforeEach(() => {
+    usersRepository = new FakeUsersRepository()
+    storageProvider = new FakeStorageProvider()
+
+    createUser = new CreateUserService(usersRepository, new FakeHashProvider())
+    updateAvatarService = new UpdateAvatarService(
+      usersRepository,
+      storageProvider
+    )
+  })
 
   it('Shold be able to change the User Avatar', async () => {
     const user = await createUser.execute({
-      email: 'user@fake.com',
+      email: 'john@doe.com',
       name: 'John Doe',
       password: '123abc'
     })
@@ -34,12 +39,12 @@ describe('UpdateAvatarService', () => {
       await storageProvider.deleteFile(user.avatar)
     }
 
-    const updatedUser = await updateAvatarService.execute({
+    await updateAvatarService.execute({
       user_id: user.id,
       avatarFilename: 'myFakeAvatar.png'
     })
 
-    expect(updatedUser.avatar).toBe('myFakeAvatar.png')
+    expect(user.avatar).toBe('myFakeAvatar.png')
   })
 
   it('Shold delete previous User Avatar', async () => {
@@ -70,7 +75,7 @@ describe('UpdateAvatarService', () => {
   })
 
   it('Shold not be able to change the User Avatar of an inexistent User', async () => {
-    expect(
+    await expect(
       updateAvatarService.execute({
         user_id: 'non-existent-user',
         avatarFilename: 'myFakeAvatar.png'

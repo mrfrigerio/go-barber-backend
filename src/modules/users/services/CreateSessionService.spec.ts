@@ -5,62 +5,56 @@ import CreateUserService from './CreateUserService'
 import FakeUsersRepository from '../repositories/fakes/FakeUsersRepository'
 import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider'
 
+let fakeUsersRepository: FakeUsersRepository
+let createUserService: CreateUserService
+let createSessionService: CreateSessionService
+
 describe('CreateSessionService', () => {
-  const fakeUsersRepository = new FakeUsersRepository()
-  const createUserService = new CreateUserService(
-    fakeUsersRepository,
-    new FakeHashProvider()
-  )
-  const createSessionService = new CreateSessionService(fakeUsersRepository)
+  beforeEach(() => {
+    fakeUsersRepository = new FakeUsersRepository()
+    createUserService = new CreateUserService(
+      fakeUsersRepository,
+      new FakeHashProvider()
+    )
+    createSessionService = new CreateSessionService(fakeUsersRepository)
+  })
 
   it('Should be able to create a session (Authenticate)', async () => {
-    /**
-     * 1. Create a user;
-     * 2. Create a session with this user.
-     */
-
-    const name = 'John Doe'
-    const email = 'john.doe@user.com'
-    const password = '123abc'
-
-    const newUser = await createUserService.execute({
-      name,
-      email,
-      password
+    const user = await createUserService.execute({
+      email: 'john@doe.com',
+      name: 'John Doe',
+      password: '123abc'
     })
 
     const response = await createSessionService.execute({
-      email,
-      password
+      email: user.email,
+      password: user.password
     })
 
     expect(response).toHaveProperty('token')
-    expect(response.user).toEqual(newUser)
+
+    expect(response.user).toEqual(user)
   })
 
   it('Should not be able to create a session (Authenticate) with an inexistent user', async () => {
-    expect(
+    await expect(
       createSessionService.execute({
-        email: 'mary.doe@user.com',
+        email: 'john@doe.com',
         password: '123abc'
       })
     ).rejects.toBeInstanceOf(AppError)
   })
 
   it('Should not be able to create a session (Authenticate) with wrong password', async () => {
-    const name = 'Mary Doe'
-    const email = 'mary.doe@user.com'
-    const password = '123abc'
-
-    await createUserService.execute({
-      name,
-      email,
-      password
+    const user = await createUserService.execute({
+      email: 'john@doe.com',
+      name: 'John Doe',
+      password: '123abc'
     })
 
-    expect(
+    await expect(
       createSessionService.execute({
-        email,
+        email: user.email,
         password: 'wrong-password'
       })
     ).rejects.toBeInstanceOf(AppError)
